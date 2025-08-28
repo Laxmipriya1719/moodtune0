@@ -1,0 +1,49 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Build output
+# dist/
+# build/
+# .next/
+# out/
+
+# Environment variables
+.env
+.env.local
+
+
+# Firebase
+serviceAccountKey.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.h5
+*.egg-info/
+venv/
+env/
+.venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# MongoDB dumps
+dump/
+
+# VSCode / IDE
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
