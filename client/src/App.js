@@ -1,3 +1,4 @@
+// App.js
 import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -5,30 +6,32 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import DiscoverPage from "./components/DiscoverPage"; // Adjust path if needed
 import AuthCard from "./components/AuthCard";
 import Dashboard from "./components/Dashboard";
-import WelcomePage from "./components/WelcomePage"; // Import the new component
+import WelcomePage from "./components/WelcomePage";
 import Player from "./pages/Player";
 import MoodDetection from "./pages/MoodDetection";
 import Analytics from "./pages/Analytics";
-
-import { auth } from "./firebaseConfig"; // Corrected path from original App.js
+import SpotifyCallback from "./components/SpotifyCallback";
+import LibraryPage from "./pages/LibraryPage";
+import { auth } from "./firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
+  const [spotifyTokens, setSpotifyTokens] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Firebase auth listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        // Fetch user data from Firestore if needed, or use currentUser directly
         setUser({
           uid: currentUser.uid,
           email: currentUser.email,
           username: currentUser.displayName || currentUser.email.split("@")[0],
-          // Add other user data as needed
         });
         setIsAuthenticated(true);
       } else {
@@ -41,19 +44,47 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // Restore Spotify tokens from localStorage on app load
+  useEffect(() => {
+    const accessToken = localStorage.getItem("spotifyAccessToken");
+    const refreshToken = localStorage.getItem("spotifyRefreshToken");
+    const expiresIn = localStorage.getItem("spotifyExpiresIn");
+
+    if (accessToken) {
+      setSpotifyTokens({ accessToken, refreshToken, expiresIn });
+    }
+  }, []);
+
+  // Handle login from AuthCard
   const handleAuth = (userData) => {
     setUser(userData);
     setIsAuthenticated(true);
   };
 
+  // Handle logout
   const handleLogout = async () => {
     try {
       await auth.signOut();
       setIsAuthenticated(false);
       setUser(null);
+      setSpotifyTokens(null);
+      localStorage.removeItem("spotifyAccessToken");
+      localStorage.removeItem("spotifyRefreshToken");
+      localStorage.removeItem("spotifyExpiresIn");
     } catch (error) {
       console.error("Error logging out:", error);
     }
+  };
+
+  // Handle Spotify login
+  const handleSpotifyLogin = (tokens) => {
+    console.log("Received Spotify tokens:", tokens);
+    setSpotifyTokens(tokens);
+
+    // Save to localStorage so it persists
+    localStorage.setItem("spotifyAccessToken", tokens.accessToken);
+    localStorage.setItem("spotifyRefreshToken", tokens.refreshToken);
+    localStorage.setItem("spotifyExpiresIn", tokens.expiresIn);
   };
 
   if (loading) {
@@ -69,70 +100,73 @@ export default function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-        <Routes>
-          <Route
-            path="/login"
-            element={
-              isAuthenticated ? (
-                <Navigate to="/dashboard" />
-              ) : (
-                <AuthCard onAuth={handleAuth} />
-              )
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              isAuthenticated ? (
-                <Dashboard user={user} onLogout={handleLogout} />
-              ) : (
-                <Navigate to="/login" />
-              )
-            }
-          />
-          <Route
-            path="/"
-            element={
-              isAuthenticated ? (
-                <Navigate to="/dashboard" />
-              ) : (
-                <WelcomePage /> // Render WelcomePage if not authenticated
-              )
-            }
-          />
-          <Route path="/player" element={<Player />} />
-          <Route path="/MoodDetection" element={<MoodDetection />} />
-          <Route path="/Analytics" element={<Analytics />} />
-        </Routes>
-      </div>
-      {/* <Routes>
+      <Routes>
+        {/* Welcome / Landing page */}
+        <Route
+          path="/"
+          element={
+            isAuthenticated || spotifyTokens ? (
+              <Navigate to="/dashboard" />
+            ) : (
+              <WelcomePage />
+            )
+          }
+        />
+
+        {/* Login page */}
+        <Route
+          path="/login"
+          element={
+            isAuthenticated || spotifyTokens ? (
+              <Navigate to="/dashboard" />
+            ) : (
+              <AuthCard onAuth={handleAuth} />
+            )
+          }
+        />
+
+        {/* Dashboard */}
+        <Route
+          path="/dashboard"
+          element={
+            isAuthenticated || spotifyTokens ? (
+              <Dashboard
+                user={user}
+                onLogout={handleLogout}
+                spotifyTokens={spotifyTokens}
+              />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+
+        {/* Spotify callback */}
+        <Route
+          path="/spotify/callback"
+          element={<SpotifyCallback onSpotifyLogin={handleSpotifyLogin} />}
+        />
+
+        {/* Other pages */}
         <Route path="/player" element={<Player />} />
-      </Routes> */}
+        <Route path="/MoodDetection" element={<MoodDetection />} />
+        {/* <Route path="/Analytics" element={<Analytics />} />
+        <Route path="/discover" element={<DiscoverPage />} /> */}
+        <Route
+          path="/analytics"
+          element={<Analytics spotifyTokens={spotifyTokens} />}
+        />
+        <Route
+          path="/discover"
+          element={<DiscoverPage spotifyTokens={spotifyTokens} />}
+        />
+        <Route
+          path="/library"
+          element={<LibraryPage spotifyTokens={spotifyTokens} />}
+        />
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
     </Router>
   );
 }
-// import { BrowserRouter, Routes, Route } from "react-router-dom";
-// import Navbar from "./components/Navbar";
-// import Home from "./pages/Home";
-// import Analytics from "./pages/Analytics";
-// import MoodDetection from "./pages/MoodDetection";
-// import Player from "./pages/Player";
-// import NotFound from "./pages/NotFound";
-
-// function App() {
-//   return (
-//     <BrowserRouter>
-//       <Navbar />
-//       <Routes>
-//         <Route path="/" element={<Home />} />
-//         <Route path="/analytics" element={<Analytics />} />
-//         <Route path="/mood-detection" element={<MoodDetection />} />
-//         <Route path="/player" element={<Player />} />
-//         <Route path="*" element={<NotFound />} />
-//       </Routes>
-//     </BrowserRouter>
-//   );
-// }
-
-// export default App;

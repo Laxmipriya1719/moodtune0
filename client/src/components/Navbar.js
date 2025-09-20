@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function Navbar({ user, onLogout }) {
+export default function Navbar({ user, onLogout, spotifyUser }) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const navigate = useNavigate();
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
@@ -13,6 +15,12 @@ export default function Navbar({ user, onLogout }) {
     }
   };
 
+  // Pick profile details
+  const displayName = spotifyUser?.display_name || user?.username || "Guest";
+
+  const profilePic =
+    spotifyUser?.images?.length > 0 ? spotifyUser.images[0].url : null;
+
   return (
     <nav className="bg-black/20 backdrop-blur-lg border-b border-white/10">
       <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -20,13 +28,22 @@ export default function Navbar({ user, onLogout }) {
           <h1 className="text-2xl font-['Pacifico'] text-white">MoodTune</h1>
 
           <div className="hidden md:flex items-center space-x-6">
-            <button className="text-white/80 hover:text-white transition-colors whitespace-nowrap cursor-pointer">
+            <button
+              className="text-white/80 hover:text-white transition-colors whitespace-nowrap cursor-pointer"
+              onClick={() => navigate("/discover")}
+            >
               Discover
             </button>
-            <button className="text-white/80 hover:text-white transition-colors whitespace-nowrap cursor-pointer">
+            <button
+              className="text-white/80 hover:text-white transition-colors whitespace-nowrap cursor-pointer"
+              onClick={() => navigate("/library")}
+            >
               Library
             </button>
-            <button className="text-white/80 hover:text-white transition-colors whitespace-nowrap cursor-pointer">
+            <button
+              className="text-white/80 hover:text-white transition-colors whitespace-nowrap cursor-pointer"
+              onClick={() => navigate("/analytics")}
+            >
               Analytics
             </button>
           </div>
@@ -52,16 +69,20 @@ export default function Navbar({ user, onLogout }) {
               onClick={() => setShowProfileMenu(!showProfileMenu)}
               className="flex items-center space-x-2 bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg transition-all whitespace-nowrap cursor-pointer"
             >
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">
-                  {user && user.username
-                    ? user.username.charAt(0).toUpperCase()
-                    : ""}
-                </span>
-              </div>
-              <span className="text-white text-sm">
-                {user ? user.username : "Guest"}
-              </span>
+              {profilePic ? (
+                <img
+                  src={profilePic}
+                  alt="Profile"
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-medium">
+                    {displayName.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+              <span className="text-white text-sm">{displayName}</span>
               <div className="w-4 h-4 flex items-center justify-center">
                 <i className="ri-arrow-down-s-line text-white/60"></i>
               </div>
@@ -72,9 +93,7 @@ export default function Navbar({ user, onLogout }) {
                 <button className="w-full text-left px-4 py-2 text-white/80 hover:bg-white/10 transition-colors whitespace-nowrap cursor-pointer">
                   Profile Settings
                 </button>
-                <button className="w-full text-left px-4 py-2 text-white/80 hover:bg-white/10 transition-colors whitespace-nowrap cursor-pointer">
-                  Privacy
-                </button>
+
                 <hr className="border-white/10 my-2" />
                 <button
                   onClick={onLogout}

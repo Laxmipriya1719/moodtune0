@@ -14,6 +14,8 @@ import userRoutes from "./routes/userRoutes.js";
 import moodRoutes from "./routes/moodRoutes.js";
 import playlistRoutes from "./routes/playlistRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
+import spotifyRoutes from "./routes/Spotify.js"; // ✅ Spotify routes
+import discoverRoutes from "./routes/discoverRoutes.js";
 
 dotenv.config();
 
@@ -26,18 +28,20 @@ app.use(express.json());
 
 // DB Connection
 mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.log("❌ MongoDB connection error:", err));
 
-// Routes
+// API Routes
 app.use("/api/users", userRoutes);
 app.use("/api/moods", moodRoutes);
 app.use("/api/playlists", playlistRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/spotify/discover", discoverRoutes);
+
+app.use("/spotify", spotifyRoutes); // ✅ All Spotify routes under /spotify
+
+// Default analytics example route
 app.get("/api/analytics", (req, res) => {
   res.json({
     moodData: [

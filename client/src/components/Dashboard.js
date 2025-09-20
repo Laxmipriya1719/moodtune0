@@ -1,4 +1,47 @@
+// // import React, { useState } from "react";
+// // import Navbar from "./Navbar";
+// // import UserGreeting from "./UserGreeting";
+// // import AnalyticsPreview from "./AnalyticsPreview";
+// // import StartMusicExperienceButton from "./StartMusicExperienceButton";
+
+// // export default function Dashboard({ user, onLogout }) {
+// //   const [showMusicPlayer, setShowMusicPlayer] = useState(false);
+
+// //   const handleStartMusic = () => {
+// //     setShowMusicPlayer(true);
+// //   };
+
+// //   if (showMusicPlayer) {
+// //     return (
+// //       // <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+// //       //   <div className="text-center text-white">
+// //       //     <div className="w-16 h-16 flex items-center justify-center mx-auto mb-4">
+// //       //       <i className="ri-music-2-fill text-4xl"></i>
+// //       //     </div>
+// //       //     <h2 className="text-2xl font-bold mb-2">Music Player Loading...</h2>
+// //       //     <p className="text-blue-200">
+// //       //       Getting your personalized experience ready
+// //       //     </p>
+// //       //   </div>
+// //       // </div>
+
+// //     );
+// //   }
+
+// //   return (
+// //     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+// //       <Navbar user={user} onLogout={onLogout} />
+
+// //       <div className="max-w-6xl mx-auto px-4 py-8">
+// //         <UserGreeting user={user} />
+// //         <AnalyticsPreview />
+// //         <StartMusicExperienceButton onStart={handleStartMusic} />
+// //       </div>
+// //     </div>
+// //   );
+// // }
 // import React, { useState } from "react";
+// import { useNavigate } from "react-router-dom";
 // import Navbar from "./Navbar";
 // import UserGreeting from "./UserGreeting";
 // import AnalyticsPreview from "./AnalyticsPreview";
@@ -6,26 +49,16 @@
 
 // export default function Dashboard({ user, onLogout }) {
 //   const [showMusicPlayer, setShowMusicPlayer] = useState(false);
+//   const navigate = useNavigate();
 
 //   const handleStartMusic = () => {
 //     setShowMusicPlayer(true);
 //   };
 
 //   if (showMusicPlayer) {
-//     return (
-//       // <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
-//       //   <div className="text-center text-white">
-//       //     <div className="w-16 h-16 flex items-center justify-center mx-auto mb-4">
-//       //       <i className="ri-music-2-fill text-4xl"></i>
-//       //     </div>
-//       //     <h2 className="text-2xl font-bold mb-2">Music Player Loading...</h2>
-//       //     <p className="text-blue-200">
-//       //       Getting your personalized experience ready
-//       //     </p>
-//       //   </div>
-//       // </div>
-
-//     );
+//     // Instead of commented UI, redirect to PlayerPage
+//     // return <div>🎶 Redirecting to music player...</div>;
+//     navigate("/player");
 //   }
 
 //   return (
@@ -33,60 +66,90 @@
 //       <Navbar user={user} onLogout={onLogout} />
 
 //       <div className="max-w-6xl mx-auto px-4 py-8">
-//         <UserGreeting user={user} />
+//         <UserGreeting user={user} spotifyUser={spotifyUser} />
+
 //         <AnalyticsPreview />
 //         <StartMusicExperienceButton onStart={handleStartMusic} />
 //       </div>
 //     </div>
 //   );
 // }
-import React, { useState } from "react";
+// // import { useNavigate } from "react-router-dom";
+
+// // export default function Dashboard() {
+// //   const navigate = useNavigate();
+
+// //   const handleStartMusic = () => {
+// //     navigate("/player"); // 👈 redirect to Player.js
+// //   };
+
+// //   return (
+// //     <div>
+
+// //       {/* keep all your existing Dashboard UI here */}
+// //       <button onClick={handleStartMusic}>Start Music Experience</button>
+// //     </div>
+// //   );
+// // }
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import UserGreeting from "./UserGreeting";
 import AnalyticsPreview from "./AnalyticsPreview";
 import StartMusicExperienceButton from "./StartMusicExperienceButton";
 
-export default function Dashboard({ user, onLogout }) {
+export default function Dashboard({ user, onLogout, spotifyTokens }) {
+  const [spotifyUser, setSpotifyUser] = useState(null);
   const [showMusicPlayer, setShowMusicPlayer] = useState(false);
   const navigate = useNavigate();
+
+  // ✅ Fetch Spotify profile once logged in
+  useEffect(() => {
+    const fetchSpotifyProfile = async () => {
+      if (spotifyTokens?.accessToken) {
+        try {
+          const response = await fetch("https://api.spotify.com/v1/me", {
+            headers: {
+              Authorization: `Bearer ${spotifyTokens.accessToken}`,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch Spotify profile");
+          }
+
+          const data = await response.json();
+          console.log("Spotify profile:", data);
+          setSpotifyUser(data);
+        } catch (error) {
+          console.error("Error fetching Spotify profile:", error);
+        }
+      }
+    };
+
+    fetchSpotifyProfile();
+  }, [spotifyTokens]);
 
   const handleStartMusic = () => {
     setShowMusicPlayer(true);
   };
 
   if (showMusicPlayer) {
-    // Instead of commented UI, redirect to PlayerPage
-    // return <div>🎶 Redirecting to music player...</div>;
-    navigate("/player");
+    navigate("/player"); // 👈 redirect to Player page
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      <Navbar user={user} onLogout={onLogout} />
+      {/* <Navbar user={user} onLogout={onLogout} /> */}
+      <Navbar user={user} onLogout={onLogout} spotifyUser={spotifyUser} />
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <UserGreeting user={user} />
+        {/* ✅ Now spotifyUser is defined */}
+        <UserGreeting user={user} spotifyUser={spotifyUser} />
+
         <AnalyticsPreview />
         <StartMusicExperienceButton onStart={handleStartMusic} />
       </div>
     </div>
   );
 }
-// import { useNavigate } from "react-router-dom";
-
-// export default function Dashboard() {
-//   const navigate = useNavigate();
-
-//   const handleStartMusic = () => {
-//     navigate("/player"); // 👈 redirect to Player.js
-//   };
-
-//   return (
-//     <div>
-
-//       {/* keep all your existing Dashboard UI here */}
-//       <button onClick={handleStartMusic}>Start Music Experience</button>
-//     </div>
-//   );
-// }

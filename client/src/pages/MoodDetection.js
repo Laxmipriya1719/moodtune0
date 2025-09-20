@@ -1,519 +1,65 @@
-// // "use client";
-
-// // import { useState, useRef, useEffect } from "react";
-// // // import Link from "next/link";
-// // // import { Link } from "react-router-dom";
-
-// // export default function MoodDetection() {
-// //   const [isAnalyzing, setIsAnalyzing] = useState(false);
-// //   const [detectedMood, setDetectedMood] = useState("");
-// //   const [confidence, setConfidence] = useState(0);
-// //   const [cameraActive, setCameraActive] = useState(false);
-// //   const [textMood, setTextMood] = useState("");
-// //   const [analysisMode, setAnalysisMode] = useState("camera"); // 'camera' or 'text'
-// //   const videoRef = useRef(null); // <-- JavaScript-friendly now
-
-// //   const mockAnalyze = () => {
-// //     setIsAnalyzing(true);
-
-// //     setTimeout(() => {
-// //       const moods = ["happy", "relaxed", "energetic", "calm", "contemplative"];
-// //       const randomMood = moods[Math.floor(Math.random() * moods.length)];
-// //       const randomConfidence = Math.floor(Math.random() * 30) + 70; // 70-100%
-
-// //       setDetectedMood(randomMood);
-// //       setConfidence(randomConfidence);
-// //       setIsAnalyzing(false);
-// //     }, 3000);
-// //   };
-
-// //   const startCamera = async () => {
-// //     try {
-// //       setCameraActive(true);
-// //       // Mock camera activation
-// //       setTimeout(() => {
-// //         mockAnalyze();
-// //       }, 1000);
-// //     } catch (error) {
-// //       console.error("Camera access denied");
-// //       setCameraActive(false);
-// //     }
-// //   };
-
-// //   const analyzeText = () => {
-// //     if (!textMood.trim()) return;
-
-// //     setIsAnalyzing(true);
-
-// //     setTimeout(() => {
-// //       let mood = "contemplative";
-// //       let conf = 85;
-
-// //       const text = textMood.toLowerCase();
-// //       if (
-// //         text.includes("happy") ||
-// //         text.includes("joy") ||
-// //         text.includes("excited")
-// //       ) {
-// //         mood = "happy";
-// //         conf = 92;
-// //       } else if (
-// //         text.includes("sad") ||
-// //         text.includes("tired") ||
-// //         text.includes("stressed")
-// //       ) {
-// //         mood = "calm";
-// //         conf = 88;
-// //       } else if (
-// //         text.includes("energy") ||
-// //         text.includes("workout") ||
-// //         text.includes("motivated")
-// //       ) {
-// //         mood = "energetic";
-// //         conf = 90;
-// //       } else if (
-// //         text.includes("relax") ||
-// //         text.includes("chill") ||
-// //         text.includes("peaceful")
-// //       ) {
-// //         mood = "relaxed";
-// //         conf = 87;
-// //       }
-
-// //       setDetectedMood(mood);
-// //       setConfidence(conf);
-// //       setIsAnalyzing(false);
-// //     }, 2000);
-// //   };
-
-// //   const getMoodColor = (mood) => {
-// //     switch (mood) {
-// //       case "happy":
-// //         return "from-yellow-500 to-orange-500";
-// //       case "relaxed":
-// //         return "from-blue-500 to-cyan-500";
-// //       case "energetic":
-// //         return "from-red-500 to-pink-500";
-// //       case "calm":
-// //         return "from-green-500 to-emerald-500";
-// //       case "contemplative":
-// //         return "from-purple-500 to-indigo-500";
-// //       default:
-// //         return "from-gray-500 to-gray-600";
-// //     }
-// //   };
-
-// //   const getRecommendedSongs = (mood) => {
-// //     const recommendations = {
-// //       happy: [
-// //         "Happy Days - Sunshine Collective",
-// //         "Bright Morning - Joy Wave",
-// //         "Celebration Time - Party People",
-// //       ],
-// //       relaxed: [
-// //         "Midnight Vibes - Luna Eclipse",
-// //         "Summer Breeze - Coastal Winds",
-// //         "Gentle Flow - River Sounds",
-// //       ],
-// //       energetic: [
-// //         "Energy Rush - Beat Masters",
-// //         "Power Up - Electric Storm",
-// //         "Adrenaline - High Voltage",
-// //       ],
-// //       calm: [
-// //         "Peaceful Mind - Zen Harmony",
-// //         "Quiet Moments - Serenity",
-// //         "Meditation Flow - Inner Peace",
-// //       ],
-// //       contemplative: [
-// //         "Deep Thoughts - Introspective Soul",
-// //         "Reflection - Mindful Music",
-// //         "Inner Journey - Soul Search",
-// //       ],
-// //     };
-// //     return recommendations[mood] || [];
-// //   };
-
-// //   return (
-// //     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-// //       {/* All your JSX stays the same... */}
-// //       {/* I’ve left the component body unchanged, since it was already JS-friendly */}
-// //       {/* Feel free to paste the remaining JSX code from your original component here – no change needed! */}
-// //       <p>hi</p>
-// //     </div>
-// //   );
-// // }
-// "use client";
-
-// import { useState, useRef } from "react";
-
-// export default function MoodDetection() {
-//   const [isAnalyzing, setIsAnalyzing] = useState(false);
-//   const [detectedMood, setDetectedMood] = useState("");
-//   const [confidence, setConfidence] = useState(0);
-//   const [cameraActive, setCameraActive] = useState(false);
-//   const [textMood, setTextMood] = useState("");
-//   const [analysisMode, setAnalysisMode] = useState("camera"); // 'camera' or 'text'
-//   const videoRef = useRef(null);
-
-//   // ---------------- MOCK ANALYSIS ----------------
-//   const mockAnalyze = () => {
-//     setIsAnalyzing(true);
-
-//     setTimeout(() => {
-//       const moods = ["happy", "relaxed", "energetic", "calm", "contemplative"];
-//       const randomMood = moods[Math.floor(Math.random() * moods.length)];
-//       const randomConfidence = Math.floor(Math.random() * 30) + 70; // 70–100%
-
-//       setDetectedMood(randomMood);
-//       setConfidence(randomConfidence);
-//       setIsAnalyzing(false);
-//     }, 3000);
-//   };
-
-//   const startCamera = async () => {
-//     try {
-//       setCameraActive(true);
-//       // Mock camera activation
-//       setTimeout(() => {
-//         mockAnalyze();
-//       }, 1000);
-//     } catch (error) {
-//       console.error("Camera access denied");
-//       setCameraActive(false);
-//     }
-//   };
-
-//   const analyzeText = () => {
-//     if (!textMood.trim()) return;
-//     setIsAnalyzing(true);
-
-//     setTimeout(() => {
-//       let mood = "contemplative";
-//       let conf = 85;
-
-//       const text = textMood.toLowerCase();
-//       if (
-//         text.includes("happy") ||
-//         text.includes("joy") ||
-//         text.includes("excited")
-//       ) {
-//         mood = "happy";
-//         conf = 92;
-//       } else if (
-//         text.includes("sad") ||
-//         text.includes("tired") ||
-//         text.includes("stressed")
-//       ) {
-//         mood = "calm";
-//         conf = 88;
-//       } else if (
-//         text.includes("energy") ||
-//         text.includes("workout") ||
-//         text.includes("motivated")
-//       ) {
-//         mood = "energetic";
-//         conf = 90;
-//       } else if (
-//         text.includes("relax") ||
-//         text.includes("chill") ||
-//         text.includes("peaceful")
-//       ) {
-//         mood = "relaxed";
-//         conf = 87;
-//       }
-
-//       setDetectedMood(mood);
-//       setConfidence(conf);
-//       setIsAnalyzing(false);
-//     }, 2000);
-//   };
-
-//   // ---------------- STYLE HELPERS ----------------
-//   const getMoodColor = (mood) => {
-//     switch (mood) {
-//       case "happy":
-//         return "from-yellow-500 to-orange-500";
-//       case "relaxed":
-//         return "from-blue-500 to-cyan-500";
-//       case "energetic":
-//         return "from-red-500 to-pink-500";
-//       case "calm":
-//         return "from-green-500 to-emerald-500";
-//       case "contemplative":
-//         return "from-purple-500 to-indigo-500";
-//       default:
-//         return "from-gray-500 to-gray-600";
-//     }
-//   };
-
-//   const getRecommendedSongs = (mood) => {
-//     const recommendations = {
-//       happy: [
-//         "Happy Days - Sunshine Collective",
-//         "Bright Morning - Joy Wave",
-//         "Celebration Time - Party People",
-//       ],
-//       relaxed: [
-//         "Midnight Vibes - Luna Eclipse",
-//         "Summer Breeze - Coastal Winds",
-//         "Gentle Flow - River Sounds",
-//       ],
-//       energetic: [
-//         "Energy Rush - Beat Masters",
-//         "Power Up - Electric Storm",
-//         "Adrenaline - High Voltage",
-//       ],
-//       calm: [
-//         "Peaceful Mind - Zen Harmony",
-//         "Quiet Moments - Serenity",
-//         "Meditation Flow - Inner Peace",
-//       ],
-//       contemplative: [
-//         "Deep Thoughts - Introspective Soul",
-//         "Reflection - Mindful Music",
-//         "Inner Journey - Soul Search",
-//       ],
-//     };
-//     return recommendations[mood] || [];
-//   };
-
-//   // ---------------- UI ----------------
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white flex flex-col items-center justify-center p-6">
-//       <h1 className="text-4xl font-bold mb-6">🎶 Mood Detection</h1>
-
-//       {/* Mode Switch */}
-//       <div className="flex gap-4 mb-6">
-//         <button
-//           onClick={() => setAnalysisMode("camera")}
-//           className={`px-6 py-2 rounded-lg ${
-//             analysisMode === "camera" ? "bg-blue-600" : "bg-white/20"
-//           }`}
-//         >
-//           Camera Mode
-//         </button>
-//         <button
-//           onClick={() => setAnalysisMode("text")}
-//           className={`px-6 py-2 rounded-lg ${
-//             analysisMode === "text" ? "bg-blue-600" : "bg-white/20"
-//           }`}
-//         >
-//           Text Mode
-//         </button>
-//       </div>
-
-//       {/* CAMERA MODE */}
-//       {analysisMode === "camera" && (
-//         <div className="flex flex-col items-center space-y-4">
-//           {!cameraActive ? (
-//             <button
-//               onClick={startCamera}
-//               className="bg-green-500 px-6 py-3 rounded-xl font-semibold hover:bg-green-600"
-//             >
-//               🎥 Start Camera & Detect Mood
-//             </button>
-//           ) : (
-//             <div className="w-64 h-40 bg-black flex items-center justify-center rounded-lg">
-//               <p className="text-gray-400">[Mock Camera Feed]</p>
-//             </div>
-//           )}
-//         </div>
-//       )}
-
-//       {/* TEXT MODE */}
-//       {analysisMode === "text" && (
-//         <div className="flex flex-col items-center space-y-4 w-full max-w-md">
-//           <input
-//             type="text"
-//             placeholder="Type how you feel..."
-//             className="w-full px-4 py-2 rounded-lg text-black"
-//             value={textMood}
-//             onChange={(e) => setTextMood(e.target.value)}
-//           />
-//           <button
-//             onClick={analyzeText}
-//             className="bg-purple-500 px-6 py-3 rounded-xl font-semibold hover:bg-purple-600"
-//           >
-//             ✍️ Analyze Mood
-//           </button>
-//         </div>
-//       )}
-
-//       {/* RESULTS */}
-//       {isAnalyzing && (
-//         <p className="mt-6 text-lg animate-pulse">Analyzing your mood...</p>
-//       )}
-
-//       {!isAnalyzing && detectedMood && (
-//         <div
-//           className={`mt-8 p-6 rounded-xl bg-gradient-to-r ${getMoodColor(
-//             detectedMood
-//           )} shadow-xl w-full max-w-lg`}
-//         >
-//           <h2 className="text-2xl font-bold capitalize">
-//             Mood: {detectedMood} 🎧
-//           </h2>
-//           <p className="text-white/90">Confidence: {confidence}%</p>
-
-//           <h3 className="mt-4 text-xl font-semibold">✨ Song Picks for You:</h3>
-//           <ul className="list-disc list-inside mt-2 space-y-1">
-//             {getRecommendedSongs(detectedMood).map((song, idx) => (
-//               <li key={idx}>{song}</li>
-//             ))}
-//           </ul>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
-// import React, { useRef, useState } from "react";
-// import axios from "axios";
-
-// export default function CameraEmotion() {
-//   const videoRef = useRef(null);
-//   const canvasRef = useRef(null);
-//   const [streaming, setStreaming] = useState(false);
-//   const [emotion, setEmotion] = useState(null);
-
-//   // Start Camera
-//   const startCamera = async () => {
-//     try {
-//       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-//       videoRef.current.srcObject = stream;
-//       setStreaming(true);
-//     } catch (err) {
-//       console.error("Error accessing camera:", err);
-//     }
-//   };
-
-//   // Capture photo from video
-//   const capturePhoto = async () => {
-//     const video = videoRef.current;
-//     const canvas = canvasRef.current;
-//     const ctx = canvas.getContext("2d");
-
-//     canvas.width = video.videoWidth;
-//     canvas.height = video.videoHeight;
-//     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-//     canvas.toBlob(async (blob) => {
-//       const formData = new FormData();
-//       formData.append("image", blob, "capture.jpg");
-
-//       try {
-//         const res = await axios.post(
-//           "http://127.0.0.1:8000/detect-emotion",
-//           formData,
-//           {
-//             headers: { "Content-Type": "multipart/form-data" },
-//           }
-//         );
-//         setEmotion(res.data);
-//       } catch (error) {
-//         console.error("Error detecting emotion:", error);
-//       }
-//     }, "image/jpeg");
-//   };
-
-//   return (
-//     <div className="flex flex-col items-center gap-4 p-4">
-//       {/* Video preview */}
-//       <video
-//         ref={videoRef}
-//         autoPlay
-//         playsInline
-//         className="rounded-xl border shadow-md w-[400px] h-[300px] bg-black"
-//       ></video>
-
-//       <canvas ref={canvasRef} style={{ display: "none" }}></canvas>
-
-//       {/* Buttons */}
-//       {!streaming ? (
-//         <button
-//           onClick={startCamera}
-//           className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow"
-//         >
-//           Start Camera
-//         </button>
-//       ) : (
-//         <button
-//           onClick={capturePhoto}
-//           className="px-4 py-2 bg-green-600 text-white rounded-lg shadow"
-//         >
-//           Capture & Detect
-//         </button>
-//       )}
-
-//       {/* Result */}
-//       {emotion && (
-//         <div className="mt-4 p-4 bg-gray-100 rounded-lg shadow w-[400px]">
-//           <h2 className="text-lg font-bold">Detected Emotion:</h2>
-//           <p>{emotion.emotion}</p>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 
 export default function MoodDetection() {
   const [mode, setMode] = useState("text"); // text or camera
   const [text, setText] = useState("");
-  const [faces, setFaces] = useState([]); // multiple faces
+  const [faces, setFaces] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [detectedMood, setDetectedMood] = useState(null);
+  const [playlists, setPlaylists] = useState([]);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // Start camera when in camera mode
-  useEffect(() => {
-    if (mode === "camera") {
-      navigator.mediaDevices
-        .getUserMedia({ video: true })
-        .then((stream) => {
-          if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-          }
-        })
-        .catch((err) => console.error("Camera error:", err));
+  // Start/Stop Camera
+  const startCamera = () => {
+    navigator.mediaDevices
+      .getUserMedia({ video: true })
+      .then((stream) => {
+        if (videoRef.current) videoRef.current.srcObject = stream;
+        setCameraActive(true);
+      })
+      .catch((err) => console.error("Camera error:", err));
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current?.srcObject) {
+      videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+      videoRef.current.srcObject = null;
+      setCameraActive(false);
     }
-    return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        let tracks = videoRef.current.srcObject.getTracks();
-        tracks.forEach((track) => track.stop());
-      }
-    };
+  };
+
+  const toggleCamera = () => (cameraActive ? stopCamera() : startCamera());
+
+  useEffect(() => {
+    if (mode !== "camera" && cameraActive) stopCamera();
   }, [mode]);
 
-  // dummy NLP analysis for text
+  // Dummy NLP text analysis
   const handleTextSubmit = async () => {
     setLoading(true);
-    try {
-      setFaces([
-        {
-          emotion: "Happy",
-          probabilities: { Happy: 0.9, Neutral: 0.07, Sad: 0.03 },
-          box: null,
-        },
-      ]);
-    } catch (err) {
-      console.error(err);
-    }
+    const mood = "happy"; //todo dummy mood, can replace with real NLP
+    setFaces([
+      { emotion: mood, probabilities: { happy: 0.9, neutral: 0.1 }, box: null },
+    ]);
+    setDetectedMood(mood);
     setLoading(false);
   };
 
+  // Camera capture
   const handleCapture = async () => {
     if (!videoRef.current || !canvasRef.current) return;
-    const context = canvasRef.current.getContext("2d");
-    context.drawImage(videoRef.current, 0, 0, 320, 240);
+    const ctx = canvasRef.current.getContext("2d");
+    ctx.drawImage(videoRef.current, 0, 0, 320, 240);
 
     canvasRef.current.toBlob(async (blob) => {
       const formData = new FormData();
       formData.append("image", blob, "capture.jpg");
-
       setLoading(true);
+
       try {
         const res = await axios.post(
           "http://127.0.0.1:8000/detect-emotion",
@@ -523,33 +69,122 @@ export default function MoodDetection() {
           }
         );
 
-        if (res.data.faces) {
+        if (res.data.faces?.length > 0) {
           setFaces(res.data.faces);
-
-          // Draw bounding boxes
-          const ctx = canvasRef.current.getContext("2d");
-          ctx.clearRect(
-            0,
-            0,
-            canvasRef.current.width,
-            canvasRef.current.height
-          );
-          ctx.drawImage(videoRef.current, 0, 0, 320, 240);
-          ctx.strokeStyle = "red";
-          ctx.lineWidth = 3;
-
-          res.data.faces.forEach((face) => {
-            const { x, y, w, h } = face.box;
-            ctx.strokeRect(x, y, w, h);
-          });
+          setDetectedMood(res.data.faces[0].emotion);
         } else {
           setFaces([]);
+          setDetectedMood(null);
         }
       } catch (err) {
         console.error(err);
       }
+
       setLoading(false);
     }, "image/jpeg");
+  };
+
+  // Fetch Spotify playlists by mood
+  // const fetchPlaylists = async (mood) => {
+  //   const token = localStorage.getItem("spotifyToken");
+  //   if (!token) return alert("Please login with Spotify first!");
+
+  //   setLoading(true);
+  //   try {
+  //     // Spotify API: search playlists by mood keyword
+  //     const res = await axios.get(
+  //       `https://api.spotify.com/v1/search?q=${encodeURIComponent(
+  //         mood
+  //       )}&type=playlist&limit=5`,
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       }
+  //     );
+  //     setPlaylists(res.data.playlists.items || []);
+  //   } catch (err) {
+  //     console.error(err);
+  //     alert("Failed to fetch playlists. Check Spotify token.");
+  //   }
+  //   setLoading(false);
+  // };
+  // Fetch Spotify playlists by mood
+  // const fetchPlaylists = async (mood) => {
+  //   const accessToken = localStorage.getItem("spotifyAccessToken");
+  //   if (!accessToken) {
+  //     alert("Connect Spotify first!");
+  //     return;
+  //   }
+
+  //   try {
+  //     const res = await fetch(
+  //       `http://localhost:5000/spotify/recommend/${mood.toLowerCase()}`,
+  //       {
+  //         headers: { Authorization: `Bearer ${accessToken}` },
+  //       }
+  //     );
+
+  //     const data = await res.json();
+  //     if (!res.ok) throw new Error(data.error || "Failed to fetch");
+  //     setPlaylists(data.playlists || []);
+  //   } catch (err) {
+  //     console.error(err);
+  //     alert("Failed to fetch playlists");
+  //   }
+  // };
+  const fetchPlaylists = async (mood) => {
+    const accessToken = localStorage.getItem("spotifyAccessToken");
+    if (!accessToken) {
+      alert("Connect Spotify first!");
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `http://localhost:5000/spotify/recommend/${mood.toLowerCase()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`, // ✅ must be here
+          },
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to fetch");
+      console.log("Playlists:", data.playlists);
+      setPlaylists(data.playlists || []);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to fetch playlists");
+    }
+  };
+
+  const downloadSong = async (title, artist) => {
+    try {
+      const query = `${title} ${artist}`;
+      const res = await fetch(
+        `http://localhost:5000/download?query=${encodeURIComponent(query)}`
+      );
+      const data = await res.json();
+
+      if (data.success && data.file) {
+        alert(`Downloaded: ${title}\nSaved to ${data.file}`);
+      } else {
+        alert("Download failed. Try again!");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error while downloading.");
+    }
+  };
+
+  // Add playlist to Player page
+  const addToPlayer = (playlist) => {
+    if (window.addMoodPlaylist) {
+      window.addMoodPlaylist(playlist);
+      alert(`Playlist "${playlist.name}" added to Player!`);
+    } else {
+      alert("Player not ready.");
+    }
   };
 
   return (
@@ -609,19 +244,103 @@ export default function MoodDetection() {
             height="240"
             className="border rounded-lg shadow mb-4"
           />
-          <canvas ref={canvasRef} width="320" height="240" className="border" />
-          <button
-            onClick={handleCapture}
-            className="px-5 py-2 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600 transition mt-4"
-          >
-            Capture & Analyze
-          </button>
+          <canvas
+            ref={canvasRef}
+            width="320"
+            height="240"
+            className="border mb-4"
+          />
+          <div className="flex gap-4 mt-2">
+            <button
+              onClick={handleCapture}
+              className="px-5 py-2 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600 transition"
+            >
+              Capture & Analyze
+            </button>
+            <button
+              onClick={toggleCamera}
+              className={`px-5 py-2 rounded-lg shadow-md transition ${
+                cameraActive
+                  ? "bg-red-500 text-white hover:bg-red-600"
+                  : "bg-blue-500 text-white hover:bg-blue-600"
+              }`}
+            >
+              {cameraActive ? "Stop Camera" : "Start Camera"}
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Results */}
+      {playlists.length > 0 && (
+        <div className="mt-6 w-full max-w-lg bg-gray-50 p-6 rounded-xl shadow-lg border">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            Playlists for mood: {detectedMood}
+          </h2>
+          <ul className="space-y-3">
+            {playlists.map((pl) => (
+              <li
+                key={pl.id}
+                className="flex justify-between items-center border-b pb-2"
+              >
+                <a
+                  href={pl.external_urls.spotify}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  {pl.name}
+                </a>
+                <button
+                  onClick={() => addToPlayer(pl)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700"
+                >
+                  Add to Player
+                </button>
+                // Inside playlist rendering
+                <li key={pl.id} className="flex flex-col gap-2 border-b pb-2">
+                  <div className="flex justify-between items-center">
+                    <a
+                      href={pl.external_urls.spotify}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {pl.name}
+                    </a>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => addToPlayer(pl)}
+                        className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                      >
+                        Add
+                      </button>
+                      <button
+                        onClick={() =>
+                          downloadSong(pl.name, pl.artists?.[0]?.name)
+                        }
+                        className="px-3 py-1 bg-green-600 text-white rounded-md text-sm hover:bg-green-700"
+                      >
+                        Download
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {detectedMood && (
+        <button
+          onClick={() => fetchPlaylists(detectedMood)}
+          className="mt-6 px-6 py-3 bg-purple-600 text-white rounded-lg shadow-md hover:bg-purple-700 transition"
+        >
+          Generate Playlist for "{detectedMood}"
+        </button>
+      )}
+
       {loading && (
-        <p className="mt-6 text-gray-600 animate-pulse">Analyzing...</p>
+        <p className="mt-6 text-gray-600 animate-pulse">Loading...</p>
       )}
 
       {faces.length > 0 && (
@@ -632,24 +351,27 @@ export default function MoodDetection() {
           {faces.map((face, idx) => (
             <div key={idx} className="mt-4">
               <p className="text-lg">
-                Emotion: <span className="text-blue-600">{face.emotion}</span>
+                Emotion:{" "}
+                <span className="text-blue-600">{face?.emotion || "N/A"}</span>
               </p>
-              <ul className="mt-2 space-y-1 text-gray-700">
-                {Object.entries(face.probabilities).map(([emo, prob]) => (
-                  <li key={emo} className="flex justify-between">
-                    <span>{emo}</span>
-                    <span className="font-medium">
-                      {(prob * 100).toFixed(2)}%
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              {face?.probabilities && (
+                <ul className="mt-2 space-y-1 text-gray-700">
+                  {Object.entries(face.probabilities).map(([emo, prob]) => (
+                    <li key={emo} className="flex justify-between">
+                      <span>{emo}</span>
+                      <span className="font-medium">
+                        {(prob * 100).toFixed(2)}%
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           ))}
         </div>
       )}
 
-      {faces.length === 0 && !loading && (
+      {!faces.length && !loading && (
         <p className="mt-6 text-gray-600">No face detected.</p>
       )}
     </div>

@@ -201,15 +201,17 @@
 //     </div>
 //   );
 // }
+// AuthCard.jsx
 import React, { useState } from "react";
-import OAuthButtons from "./OAuthButtons";
+import axios from "axios";
 import { auth } from "../firebaseConfig";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from "firebase/auth";
-import axios from "axios";
 
 export default function AuthCard({ onAuth }) {
   const [activeTab, setActiveTab] = useState("login");
@@ -232,7 +234,6 @@ export default function AuthCard({ onAuth }) {
         );
         await updateProfile(userCredential.user, { displayName: username });
 
-        // Prepare user object
         const newUser = {
           firebaseUID: userCredential.user.uid,
           email: userCredential.user.email,
@@ -245,8 +246,7 @@ export default function AuthCard({ onAuth }) {
           "http://localhost:5000/api/users",
           newUser
         );
-        onAuth(res.data); // Use DB user
-        console.log("Sending newUser to backend:", newUser);
+        onAuth(res.data);
       } else {
         // Firebase login
         const userCredential = await signInWithEmailAndPassword(
@@ -270,7 +270,6 @@ export default function AuthCard({ onAuth }) {
         );
 
         if (!res.data) {
-          // If user not in DB, save it
           const newRes = await axios.post(
             "http://localhost:5000/api/users",
             user
@@ -286,8 +285,40 @@ export default function AuthCard({ onAuth }) {
     }
   };
 
+  const handleOAuth = async (providerName) => {
+    let provider;
+    if (providerName === "google") provider = new GoogleAuthProvider();
+    if (providerName === "spotify") {
+      // Just redirect to backend login route
+      window.location.href = "http://localhost:5000/spotify/login";
+    }
+
+    if (provider) {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+
+        const newUser = {
+          firebaseUID: user.uid,
+          email: user.email,
+          username: user.displayName || user.email.split("@")[0],
+          joinDate: new Date().toISOString(),
+        };
+
+        const res = await axios.post(
+          "http://localhost:5000/api/users",
+          newUser
+        );
+        onAuth(res.data);
+      } catch (err) {
+        console.error(err);
+        alert(`OAuth login failed: ${err.message}`);
+      }
+    }
+  };
+
   return (
-    <div className="flex items-center justify-center min-h-screen p-4">
+    <div className="flex items-center justify-center min-h-screen p-4 bg-gradient-to-br from-purple-900 to-blue-800">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-['Pacifico'] text-white mb-2">
@@ -301,7 +332,7 @@ export default function AuthCard({ onAuth }) {
           <div className="flex rounded-full bg-white/10 p-1 mb-6">
             <button
               onClick={() => setActiveTab("login")}
-              className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-all ${
                 activeTab === "login"
                   ? "bg-white text-purple-900"
                   : "text-white hover:text-purple-200"
@@ -311,7 +342,7 @@ export default function AuthCard({ onAuth }) {
             </button>
             <button
               onClick={() => setActiveTab("signup")}
-              className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-all ${
                 activeTab === "signup"
                   ? "bg-white text-purple-900"
                   : "text-white hover:text-purple-200"
@@ -321,67 +352,69 @@ export default function AuthCard({ onAuth }) {
             </button>
           </div>
 
-          {/* Error Message */}
+          {/* Error */}
           {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {activeTab === "signup" && (
-              <div>
-                <input
-                  type="text"
-                  placeholder="Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                />
-              </div>
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-400"
+              />
             )}
 
-            <div>
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-400"
-              />
-            </div>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-400"
+            />
 
-            <div>
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-400"
-              />
-            </div>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-400"
+            />
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-purple-500 to-blue-600 text-white py-3 rounded-lg font-medium hover:from-purple-600 hover:to-blue-700 transition-all whitespace-nowrap cursor-pointer"
+              className="w-full bg-gradient-to-r from-purple-500 to-blue-600 text-white py-3 rounded-lg font-medium hover:from-purple-600 hover:to-blue-700 transition-all"
             >
               {activeTab === "login" ? "Login" : "Create Account"}
             </button>
           </form>
 
           {/* OAuth */}
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/20"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-transparent text-white/60">
-                  Or continue with
-                </span>
-              </div>
-            </div>
+          <div className="mt-6 space-y-3">
+            <button
+              onClick={() => handleOAuth("google")}
+              className="w-full flex items-center justify-center gap-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white py-3 px-4 rounded-lg transition-all"
+            >
+              <i className="ri-google-fill text-lg"></i> Continue with Google
+            </button>
 
-            <OAuthButtons onAuth={onAuth} />
+            <button
+              onClick={() =>
+                (window.location.href = "http://localhost:5000/spotify/login")
+              }
+              className="w-full flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg transition-all"
+            >
+              <i className="ri-spotify-fill text-lg"></i> Continue with Spotify
+            </button>
+            {/* <button
+              
+            >
+              Continue with Spotify
+            </button> */}
           </div>
         </div>
       </div>
