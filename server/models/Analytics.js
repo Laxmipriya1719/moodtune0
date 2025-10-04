@@ -1,11 +1,15 @@
 import mongoose from "mongoose";
 
 const analyticsSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  userId: { type: String, required: true },
   songTitle: { type: String, required: true },
+  artist: { type: String },
+  genre: { type: String },
+  album: { type: String },
+  duration: { type: Number },
   playedAt: { type: Date, default: Date.now },
-  duration: { type: Number }, // in seconds
   moodDuringListening: { type: String },
+  sessionId: { type: String },
 });
 
 const Analytics = mongoose.model("Analytics", analyticsSchema);

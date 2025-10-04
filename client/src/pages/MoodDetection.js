@@ -38,16 +38,33 @@ export default function MoodDetection() {
     if (mode !== "camera" && cameraActive) stopCamera();
   }, [mode]);
 
-  // Dummy NLP text analysis
-  const handleTextSubmit = async () => {
-    setLoading(true);
-    const mood = "happy"; //todo dummy mood, can replace with real NLP
-    setFaces([
-      { emotion: mood, probabilities: { happy: 0.9, neutral: 0.1 }, box: null },
-    ]);
-    setDetectedMood(mood);
-    setLoading(false);
-  };
+const handleTextSubmit = async () => {
+  if (!text.trim()) {
+    alert("Please enter some text first!");
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const res = await axios.post("http://127.0.0.1:8000/analyze-text", {
+      text,
+    });
+
+    if (res.data.status === "success" && res.data.faces?.length > 0) {
+      setFaces(res.data.faces);
+      setDetectedMood(res.data.faces[0].emotion);
+    } else {
+      setFaces([]);
+      setDetectedMood(null);
+      alert("No emotion detected from text.");
+    }
+  } catch (err) {
+    console.error("Text analysis failed:", err);
+    alert("Error analyzing text. Check backend logs.");
+  }
+  setLoading(false);
+};
+ 
 
   // Camera capture
   const handleCapture = async () => {

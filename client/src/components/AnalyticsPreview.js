@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { db, auth } from "../firebaseConfig";
+import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
 import {
   LineChart,
   Line,
@@ -20,14 +22,85 @@ export default function AnalyticsPreview() {
   useEffect(() => {
     const fetchAnalyticsData = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/analytics");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        const user = auth.currentUser;
+        if (!user) {
+          setLoading(false);
+          return;
         }
-        const data = await response.json();
-        setMoodData(data.moodData);
-        setGenreData(data.genreData);
-        setTopSongs(data.topSongs);
+
+        // Get last 7 days of data
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+
+        const q = query(
+          collection(db, "analytics"),
+          where("userId", "==", user.uid),
+          where("playedAt", ">=", weekAgo),
+          orderBy("playedAt", "desc")
+        );
+
+        const querySnapshot = await getDocs(q);
+        const data = [];
+        querySnapshot.forEach((doc) => {
+          data.push(doc.data());
+        });
+
+        // Process mood data
+        const moodByDay = {};
+        const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        
+        data.forEach(item => {
+          const date = item.playedAt?.toDate ? item.playedAt.toDate() : new Date(item.playedAt);
+          const day = daysOfWeek[date.getDay()];
+          
+          if (!moodByDay[day]) {
+            moodByDay[day] = { day, happy: 0, calm: 0, energetic: 0 };
+          }
+          
+          const mood = item.moodDuringListening?.toLowerCase() || '';
+          if (mood.includes('happy')) moodByDay[day].happy += 1;
+          if (mood.includes('calm') || mood.includes('relax')) moodByDay[day].calm += 1;
+          if (mood.includes('energetic') || mood.includes('energy')) moodByDay[day].energetic += 1;
+        });
+
+        const moodChartData = Object.values(moodByDay);
+
+        // Process genre data
+        const genreCount = {};
+        data.forEach(item => {
+          const genre = item.genre || 'Unknown';
+          genreCount[genre] = (genreCount[genre] || 0) + 1;
+        });
+
+        const colors = ['#8B5CF6', '#3B82F6', '#10B981', '#F59E0B'];
+        const genreChartData = Object.entries(genreCount).map(([name, count], index) => ({
+          name,
+          value: Math.round((count / data.length) * 100),
+          color: colors[index % colors.length]
+        })).slice(0, 4);
+
+        // Process top songs
+        const songCount = {};
+        data.forEach(item => {
+          const key = `${item.songTitle}_${item.artist}`;
+          if (!songCount[key]) {
+            songCount[key] = {
+              title: item.songTitle,
+              artist: item.artist,
+              plays: 0,
+              mood: item.moodDuringListening || 'Neutral'
+            };
+          }
+          songCount[key].plays += 1;
+        });
+
+        const topSongsData = Object.values(songCount)
+          .sort((a, b) => b.plays - a.plays)
+          .slice(0, 3);
+
+        setMoodData(moodChartData);
+        setGenreData(genreChartData);
+        setTopSongs(topSongsData);
       } catch (err) {
         setError(err.message);
         console.error("Failed to fetch analytics data:", err);
@@ -51,6 +124,21 @@ export default function AnalyticsPreview() {
     );
   }
 
+  // Show empty state if no data
+  if (!moodData.length && !genreData.length && !topSongs.length) {
+    return (
+      <div className="mb-8 bg-white/10 backdrop-blur-lg rounded-xl p-8 border border-white/20 text-center">
+        <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i className="ri-music-2-line text-3xl text-purple-300"></i>
+        </div>
+        <h3 className="text-xl font-semibold text-white mb-2">No Analytics Yet</h3>
+        <p className="text-purple-200">
+          Start listening to music to see your analytics here!
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-6">
@@ -60,6 +148,7 @@ export default function AnalyticsPreview() {
         </button>
       </div>
 
+      {/* Rest of your existing JSX remains the same */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
           <h3 className="text-white font-semibold mb-4 flex items-center">
