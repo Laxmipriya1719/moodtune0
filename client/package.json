@@ -2,6 +2,7 @@
   "name": "moodtune-client",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://127.0.0.1:5000",
   "dependencies": {
     "firebase": "^10.14.1",
     "moodtune": "file:..",

@@ -15,7 +15,6 @@ export default function Navbar({ user, onLogout, spotifyUser }) {
     }
   };
 
-  // Pick profile details
   const displayName = spotifyUser?.display_name || user?.username || "Guest";
 
   const profilePic =
@@ -25,7 +24,12 @@ export default function Navbar({ user, onLogout, spotifyUser }) {
     <nav className="bg-black/20 backdrop-blur-lg border-b border-white/10">
       <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-8">
-          <h1 className="text-2xl font-['Pacifico'] text-white">MoodTune</h1>
+          <h1
+            className="text-2xl font-['Pacifico'] text-white cursor-pointer"
+            onClick={() => navigate("/")}
+          >
+            MoodTune
+          </h1>
 
           <div className="hidden md:flex items-center space-x-6">
             <button
@@ -90,8 +94,14 @@ export default function Navbar({ user, onLogout, spotifyUser }) {
 
             {showProfileMenu && (
               <div className="absolute right-0 top-12 w-48 bg-gray-900 border border-white/10 rounded-lg shadow-xl py-2 z-50">
-                <button className="w-full text-left px-4 py-2 text-white/80 hover:bg-white/10 transition-colors whitespace-nowrap cursor-pointer">
-                  Profile Settings
+                <button
+                  onClick={() => {
+                    navigate("/profile");
+                    setShowProfileMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-white/80 hover:bg-white/10 transition-colors whitespace-nowrap cursor-pointer"
+                >
+                  Profile
                 </button>
 
                 <hr className="border-white/10 my-2" />

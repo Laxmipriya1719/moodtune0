@@ -177,6 +177,7 @@ def detect():
     results = detect_emotions(rgb)
     return jsonify({"status": "success", "faces": results}), 200
 
+
 @app.route("/analyze-text", methods=["POST"])
 def analyze_text():
     try:
@@ -188,9 +189,9 @@ def analyze_text():
         blob = TextBlob(text)
         polarity = blob.sentiment.polarity  # -1 to +1
 
-        if polarity > 0.1:
+        if polarity > 0.3:
             mood = "Happy"
-        elif polarity < -0.1:
+        elif polarity < -0.3:
             mood = "Sad"
         else:
             mood = "Neutral"
@@ -209,7 +210,5 @@ def analyze_text():
         })
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
-
-# ---------- Main ----------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True, threaded=True)

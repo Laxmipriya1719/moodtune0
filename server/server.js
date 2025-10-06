@@ -21,7 +21,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
+const API_KEY = process.env.YT_API_KEY;
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -39,7 +39,8 @@ app.use("/api/playlists", playlistRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/spotify/discover", discoverRoutes);
 
-app.use("/spotify", spotifyRoutes); // ✅ All Spotify routes under /spotify
+// app.use("/spotify", spotifyRoutes); // ✅ All Spotify routes under /spotify
+app.use("/api/spotify", spotifyRoutes);
 
 // Default analytics example route
 app.get("/api/analytics", (req, res) => {
@@ -65,6 +66,26 @@ app.get("/api/analytics", (req, res) => {
       { title: "Song C", artist: "Artist 3", plays: 85, mood: "Energetic" },
     ],
   });
+});
+// === YOUTUBE SEARCH ENDPOINT ===
+app.get("/youtube/search", async (req, res) => {
+  const q = req.query.query;
+  try {
+    const ytRes = await fetch(
+      `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(
+        q
+      )}&key=${process.env.YT_API_KEY}`
+    );
+    const data = await ytRes.json();
+    if (data.items?.length > 0) {
+      res.json({ videoId: data.items[0].id.videoId });
+    } else {
+      res.json({ videoId: null });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "YT search failed" });
+  }
 });
 
 // Start Server

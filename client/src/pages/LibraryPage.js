@@ -1,73 +1,92 @@
+// LibraryPage.js
 import React, { useEffect, useState } from "react";
 
 export default function LibraryPage({ spotifyTokens }) {
-  const { accessToken } = spotifyTokens || {};
   const [playlists, setPlaylists] = useState([]);
-  const [tracks, setTracks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!accessToken) return;
-
     const fetchPlaylists = async () => {
+      if (!spotifyTokens?.accessToken) {
+        setError("Spotify login required. Please login to view your Library.");
+        setLoading(false);
+        return;
+      }
+
       try {
-        const res = await fetch(
-          "http://localhost:5000/spotify/library/playlists",
+        const response = await fetch(
+          "https://api.spotify.com/v1/me/playlists?limit=12",
           {
-            headers: { Authorization: `Bearer ${accessToken}` },
+            headers: {
+              Authorization: `Bearer ${spotifyTokens.accessToken}`,
+            },
           }
         );
-        const data = await res.json();
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch playlists.");
+        }
+
+        const data = await response.json();
         setPlaylists(data.items || []);
       } catch (err) {
-        console.error("Error fetching playlists:", err);
+        console.error(err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchPlaylists();
-  }, [accessToken]);
+  }, [spotifyTokens]);
 
-  const loadTracks = async (playlistId) => {
-    try {
-      const res = await fetch(
-        `http://localhost:5000/spotify/library/playlists/${playlistId}`,
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
-      );
-      const data = await res.json();
-      setTracks(data.items || []);
-    } catch (err) {
-      console.error("Error fetching tracks:", err);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white">
+        <p>Loading your playlists...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white">
+        <p>{error}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4 text-white">Your Library</h1>
-
-      <div className="grid grid-cols-2 gap-4">
-        {playlists.map((pl) => (
-          <div
-            key={pl.id}
-            className="bg-white rounded-lg p-4 shadow cursor-pointer"
-            onClick={() => loadTracks(pl.id)}
-          >
-            <p className="font-semibold">{pl.name}</p>
-          </div>
-        ))}
-      </div>
-
-      {tracks.length > 0 && (
-        <div className="mt-6 bg-gray-900 text-white p-4 rounded-lg">
-          <h2 className="text-xl mb-3">Tracks</h2>
-          <ul>
-            {tracks.map((item) => (
-              <li key={item.track.id} className="mb-2">
-                {item.track.name} –{" "}
-                {item.track.artists.map((a) => a.name).join(", ")}
-              </li>
-            ))}
-          </ul>
+    <div className="p-6 min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+      <h1 className="text-3xl font-bold text-white mb-6">Your Library</h1>
+      {playlists.length === 0 ? (
+        <p className="text-gray-300">No playlists found.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {playlists.map((playlist) => (
+            <div
+              key={playlist.id}
+              className="bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow cursor-pointer"
+            >
+              <img
+                src={
+                  playlist.images?.[0]?.url ||
+                  "https://via.placeholder.com/300x300?text=No+Image"
+                }
+                alt={playlist.name || "Playlist"}
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-4">
+                <h2 className="text-white font-semibold text-lg">
+                  {playlist.name || "Unnamed Playlist"}
+                </h2>
+                <p className="text-gray-400 text-sm">
+                  {playlist.tracks?.total ?? 0} tracks
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

@@ -103,31 +103,27 @@ export default function Dashboard({ user, onLogout, spotifyTokens }) {
   const [showMusicPlayer, setShowMusicPlayer] = useState(false);
   const navigate = useNavigate();
 
-  // ✅ Fetch Spotify profile once logged in
+  // ✅ Fetch Spotify profile from backend
   useEffect(() => {
-    const fetchSpotifyProfile = async () => {
-      if (spotifyTokens?.accessToken) {
-        try {
-          const response = await fetch("https://api.spotify.com/v1/me", {
-            headers: {
-              Authorization: `Bearer ${spotifyTokens.accessToken}`,
-            },
-          });
+    async function fetchSpotifyProfile(token) {
+      if (!token) return;
+      try {
+        const response = await fetch("http://127.0.0.1:5000/api/spotify/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-          if (!response.ok) {
-            throw new Error("Failed to fetch Spotify profile");
-          }
-
-          const data = await response.json();
-          console.log("Spotify profile:", data);
-          setSpotifyUser(data);
-        } catch (error) {
-          console.error("Error fetching Spotify profile:", error);
+        if (!response.ok) {
+          throw new Error(`Spotify API error: ${response.status}`);
         }
-      }
-    };
 
-    fetchSpotifyProfile();
+        const data = await response.json();
+        setSpotifyUser(data); // ✅ save profile
+      } catch (err) {
+        console.error("Error fetching Spotify profile:", err);
+      }
+    }
+
+    fetchSpotifyProfile(spotifyTokens?.accessToken);
   }, [spotifyTokens]);
 
   const handleStartMusic = () => {
@@ -135,18 +131,15 @@ export default function Dashboard({ user, onLogout, spotifyTokens }) {
   };
 
   if (showMusicPlayer) {
-    navigate("/player"); // 👈 redirect to Player page
+    navigate("/player");
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      {/* <Navbar user={user} onLogout={onLogout} /> */}
       <Navbar user={user} onLogout={onLogout} spotifyUser={spotifyUser} />
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* ✅ Now spotifyUser is defined */}
         <UserGreeting user={user} spotifyUser={spotifyUser} />
-
         <AnalyticsPreview />
         <StartMusicExperienceButton onStart={handleStartMusic} />
       </div>

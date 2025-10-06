@@ -209,19 +209,15 @@
 //     </div>
 //   );
 // }
-
-
-
+// Player.js
 // "use client";
 
 // import { useState, useRef, useEffect } from "react";
-// import { Link } from "react-router-dom";
+// import { Link, useLocation } from "react-router-dom";
 // import PlayerControls from "../components/player/PlayerControls";
 // import PlaylistSidebar from "../components/player/PlaylistSidebar";
 // import NowPlaying from "../components/player/NowPlaying";
 // import VoiceControl from "../components/player/VoiceControl";
-// import { db, auth } from "../firebaseConfig";
-// import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 // const initialSongs = [
 //   {
@@ -229,20 +225,20 @@
 //     title: "Midnight Vibes",
 //     artist: "Luna Eclipse",
 //     album: "Nocturnal Dreams",
-//     duration: 222, // 3:42 in seconds
+//     duration: "3:42",
 //     mood: "relaxed",
 //     genre: "ambient",
 //     coverUrl:
 //       "https://readdy.ai/api/search-image?query=album-1&width=400&height=400",
 //     preview_url:
-//       "https://p.scdn.co/mp3-preview/3e2a44d5a17a90572aaea2f8d9ec5eae5fdf9e28?cid=dummy",
+//       "https://p.scdn.co/mp3-preview/3e2a44d5a17a90572aaea2f8d9ec5eae5fdf9e28?cid=dummy", // demo preview
 //   },
 //   {
 //     id: 2,
 //     title: "Energy Rush",
 //     artist: "Beat Masters",
 //     album: "Adrenaline",
-//     duration: 255, // 4:15 in seconds
+//     duration: "4:15",
 //     mood: "energetic",
 //     genre: "electronic",
 //     coverUrl:
@@ -253,6 +249,9 @@
 // ];
 
 // export default function Player() {
+//   const location = useLocation();
+//   const incomingTrack = location.state?.track || null;
+
 //   const [songs, setSongs] = useState(initialSongs);
 //   const [currentSong, setCurrentSong] = useState(initialSongs[0]);
 //   const [isPlaying, setIsPlaying] = useState(false);
@@ -263,51 +262,64 @@
 //   const [showVoiceControl, setShowVoiceControl] = useState(false);
 
 //   const audioRef = useRef(null);
+
 //   const currentIndex = songs.findIndex((song) => song.id === currentSong.id);
 
-//   // 🔥 Firestore logger
-//   const logEvent = async (action) => {
-//     try {
-//       const user = auth.currentUser;
-//       if (!user) return;
-
-//       await addDoc(collection(db, "analytics"), {
-//         userId: user.uid,
-//         songTitle: currentSong.title,
-//         songId: currentSong.id,
-//         action,
-//         duration: currentSong.duration,
-//         moodDuringListening: currentSong.mood,
-//         playedAt: serverTimestamp(),
-//       });
-//     } catch (err) {
-//       console.error("Error logging analytics:", err);
-//     }
-//   };
-
 //   const playNext = () => {
-//     const nextIndex = isShuffled
-//       ? Math.floor(Math.random() * songs.length)
-//       : (currentIndex + 1) % songs.length;
-//     setCurrentSong(songs[nextIndex]);
+//     if (isShuffled) {
+//       const randomIndex = Math.floor(Math.random() * songs.length);
+//       setCurrentSong(songs[randomIndex]);
+//     } else {
+//       const nextIndex = (currentIndex + 1) % songs.length;
+//       setCurrentSong(songs[nextIndex]);
+//     }
 //     setCurrentTime(0);
-//     logEvent("skip-next");
 //   };
 
 //   const playPrevious = () => {
 //     const prevIndex = currentIndex === 0 ? songs.length - 1 : currentIndex - 1;
 //     setCurrentSong(songs[prevIndex]);
 //     setCurrentTime(0);
-//     logEvent("skip-previous");
 //   };
 
 //   const selectSong = (song) => {
 //     setCurrentSong(song);
 //     setCurrentTime(0);
-//     logEvent("song-select");
 //   };
 
-//   // Auto-play when song changes
+//   // 🚀 Add playlist dynamically (from MoodDetection → navigate("/player", {state:{track}}))
+//   useEffect(() => {
+//     if (!incomingTrack) return;
+
+//     // Normalized track object
+//     const normalizedSong = {
+//       id: incomingTrack.id || `spotify-${Date.now()}`,
+//       title: incomingTrack.name || incomingTrack.title,
+//       artist: incomingTrack.artists
+//         ? incomingTrack.artists.map((a) => a.name).join(", ")
+//         : incomingTrack.artist || "Unknown Artist",
+//       album:
+//         incomingTrack.album?.name || incomingTrack.album || "Unknown Album",
+//       duration: incomingTrack.duration_ms
+//         ? `${Math.floor(incomingTrack.duration_ms / 60000)}:${Math.floor(
+//             (incomingTrack.duration_ms % 60000) / 1000
+//           )
+//             .toString()
+//             .padStart(2, "0")}`
+//         : incomingTrack.duration || "N/A",
+//       mood: incomingTrack.mood || "Detected",
+//       genre: incomingTrack.genre || "Unknown",
+//       coverUrl: incomingTrack.album?.images?.[0]?.url || incomingTrack.coverUrl,
+//       url: incomingTrack.url || null, // full song (downloaded)
+//       preview_url: incomingTrack.preview_url || null, // fallback 30s
+//     };
+
+//     setSongs((prev) => [...prev, normalizedSong]);
+//     setCurrentSong(normalizedSong);
+//     setIsPlaying(true);
+//   }, [incomingTrack]);
+
+//   // 🔊 Auto-play when song changes
 //   useEffect(() => {
 //     if (audioRef.current) {
 //       audioRef.current.pause();
@@ -315,21 +327,14 @@
 //       if (isPlaying && (currentSong.url || currentSong.preview_url)) {
 //         audioRef.current
 //           .play()
-//           .then(() => logEvent("play"))
 //           .catch((err) => console.error("Playback failed:", err));
 //       }
 //     }
 //   }, [currentSong, isPlaying]);
 
-//   // Log pause events
-//   useEffect(() => {
-//     if (!isPlaying) {
-//       logEvent("pause");
-//     }
-//   }, [isPlaying]);
-
 //   return (
 //     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900">
+//       {/* ✅ Top Bar stays */}
 //       <header className="bg-black/30 backdrop-blur-sm border-b border-white/10 px-6 py-4">
 //         <div className="flex items-center justify-between">
 //           <Link
@@ -363,12 +368,14 @@
 //       </header>
 
 //       <div className="flex flex-1">
+//         {/* Sidebar */}
 //         <PlaylistSidebar
 //           songs={songs}
 //           currentSong={currentSong}
 //           onSongSelect={selectSong}
 //         />
 
+//         {/* Main Player */}
 //         <div className="flex-1 flex flex-col">
 //           {showVoiceControl && <VoiceControl />}
 
@@ -394,6 +401,7 @@
 //         </div>
 //       </div>
 
+//       {/* 🎵 Audio element */}
 //       <audio
 //         ref={audioRef}
 //         src={currentSong.url || currentSong.preview_url || ""}
@@ -401,82 +409,64 @@
 //     </div>
 //   );
 // }
-
-
-
-
-
-
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import PlayerControls from "../components/player/PlayerControls";
 import PlaylistSidebar from "../components/player/PlaylistSidebar";
 import NowPlaying from "../components/player/NowPlaying";
 import VoiceControl from "../components/player/VoiceControl";
-import useAnalyticsTracker from "../hooks/useAnalyticsTracker";
+import YouTube from "react-youtube";
 
-const initialSongs = [
-  {
-    id: 1,
-    title: "Midnight Vibes",
-    artist: "Luna Eclipse",
-    album: "Nocturnal Dreams",
-    duration: 222,
-    mood: "relaxed",
-    genre: "Ambient",
-    coverUrl:
-      "https://readdy.ai/api/search-image?query=album-1&width=400&height=400",
-    preview_url:
-      "https://p.scdn.co/mp3-preview/3e2a44d5a17a90572aaea2f8d9ec5eae5fdf9e28?cid=dummy",
-  },
-  {
-    id: 2,
-    title: "Energy Rush",
-    artist: "Beat Masters",
-    album: "Adrenaline",
-    duration: 255,
-    mood: "energetic",
-    genre: "Electronic",
-    coverUrl:
-      "https://readdy.ai/api/search-image?query=album-2&width=400&height=400",
-    preview_url:
-      "https://p.scdn.co/mp3-preview/6ccad64dc8415e6011a5ad3d7304f8a4a2d3f896?cid=dummy",
-  },
-];
+const initialSongs = JSON.parse(
+  localStorage.getItem("melodymindSongs") || "[]"
+);
 
 export default function Player() {
+  const location = useLocation();
+  const incomingTrack = location.state?.track || null;
+
   const [songs, setSongs] = useState(initialSongs);
-  const [currentSong, setCurrentSong] = useState(initialSongs[0]);
+  const [currentSong, setCurrentSong] = useState(initialSongs[0] || null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const [isShuffled, setIsShuffled] = useState(false);
-  const [repeatMode, setRepeatMode] = useState("none");
+  const [repeatMode, setRepeatMode] = useState("none"); // none | one | all
   const [showVoiceControl, setShowVoiceControl] = useState(false);
 
   const audioRef = useRef(null);
-  const currentIndex = songs.findIndex((song) => song.id === currentSong.id);
 
-  // Use the analytics tracker hook
-  const { trackSongPlay, stopTrackingCurrentSong, trackMoodChange } = useAnalyticsTracker();
+  const currentIndex = songs.findIndex((s) => s.id === currentSong?.id);
 
-  const playNext = async () => {
-    // Stop tracking current song before changing
-    await stopTrackingCurrentSong();
-    
-    const nextIndex = isShuffled
-      ? Math.floor(Math.random() * songs.length)
-      : (currentIndex + 1) % songs.length;
-    setCurrentSong(songs[nextIndex]);
+  // --- Handle Next / Previous
+  const playNext = () => {
+    if (songs.length === 0) return;
+    if (isShuffled) {
+      const randomIndex = Math.floor(Math.random() * songs.length);
+      setCurrentSong(songs[randomIndex]);
+    } else {
+      const nextIndex = (currentIndex + 1) % songs.length;
+      setCurrentSong(songs[nextIndex]);
+    }
     setCurrentTime(0);
   };
+  const handleFileUpload = (event) => {
+    const files = Array.from(event.target.files);
+    const newSongs = files.map((file, idx) => ({
+      id: `local-${idx}`,
+      title: file.name,
+      artist: "Local File",
+      album: "Device",
+      url: URL.createObjectURL(file),
+    }));
+    setSongs((prev) => [...prev, ...newSongs]);
+  };
 
-  const playPrevious = async () => {
-    // Stop tracking current song before changing
-    await stopTrackingCurrentSong();
-    
+  const playPrevious = () => {
+    if (songs.length === 0) return;
     const prevIndex = currentIndex === 0 ? songs.length - 1 : currentIndex - 1;
     setCurrentSong(songs[prevIndex]);
     setCurrentTime(0);
@@ -485,65 +475,150 @@ export default function Player() {
   const selectSong = async (song) => {
     // Stop tracking current song before changing
     await stopTrackingCurrentSong();
-    
+
     setCurrentSong(song);
+    setIsPlaying(true);
     setCurrentTime(0);
   };
-
-  // Track when song starts playing
+  const stopTrackingCurrentSong = async () => {
+    // If you have any tracking intervals or timers, clear them here
+    // For now, this is a placeholder that does nothing but prevents the error
+    return Promise.resolve();
+  };
+  // --- Add new track from MoodDetection
   useEffect(() => {
-    if (isPlaying && currentSong) {
-      trackSongPlay({
-        title: currentSong.title,
-        artist: currentSong.artist,
-        genre: currentSong.genre,
-        album: currentSong.album,
-        mood: currentSong.mood,
-      });
-      console.log('🎵 Started tracking:', currentSong.title);
-    }
-  }, [currentSong, isPlaying]);
+    if (!incomingTrack) return;
 
-  // Stop tracking when playback stops
-  useEffect(() => {
-    if (!isPlaying) {
-      stopTrackingCurrentSong();
-    }
-  }, [isPlaying]);
+    const normalized = {
+      id: incomingTrack.id || `spotify-${Date.now()}`,
+      title: incomingTrack.name || incomingTrack.title,
+      artist: incomingTrack.artists
+        ? incomingTrack.artists.map((a) => a.name).join(", ")
+        : incomingTrack.artist || "Unknown Artist",
+      album:
+        incomingTrack.album?.name || incomingTrack.album || "Unknown Album",
+      duration: incomingTrack.duration_ms
+        ? Math.floor(incomingTrack.duration_ms / 1000)
+        : 0,
+      coverUrl: incomingTrack.album?.images?.[0]?.url || incomingTrack.coverUrl,
+      url: incomingTrack.url || null, // full song if downloaded
+      preview_url: incomingTrack.preview_url || null,
+    };
 
-  // Auto-play when song changes
+    setSongs((prev) => {
+      const updated = [...prev, normalized];
+      localStorage.setItem("melodymindSongs", JSON.stringify(updated));
+      return updated;
+    });
+    setCurrentSong(normalized);
+    setIsPlaying(true);
+  }, [incomingTrack]);
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.load();
-      if (isPlaying && (currentSong.url || currentSong.preview_url)) {
-        audioRef.current
-          .play()
-          .catch((err) => console.error("Playback failed:", err));
+    window.addMoodPlaylist = async (playlist) => {
+      if (!playlist) return;
+
+      const accessToken = localStorage.getItem("spotifyAccessToken");
+
+      const newSongs = await Promise.all(
+        playlist.tracks.items.map(async (item, idx) => {
+          const track = item.track || item;
+          if (!track) return null;
+
+          // Step 1: build query
+          const query = `${track.name} ${track.artists[0]?.name}`;
+
+          try {
+            // Step 2: search YouTube (via your backend or free API)
+            const res = await fetch(
+              `http://localhost:5000/youtube/search?query=${encodeURIComponent(
+                query
+              )}`
+            );
+            const data = await res.json();
+
+            if (!data.videoId) return null;
+
+            return {
+              id: `yt-${track.id}-${idx}`,
+              title: track.name,
+              artist: track.artists.map((a) => a.name).join(", "),
+              album: playlist.name,
+              mood: playlist.name,
+              youtubeId: data.videoId, // 🎥 store YouTube video id
+              source: "youtube",
+            };
+          } catch (err) {
+            console.error("YT search failed", err);
+            return null;
+          }
+        })
+      );
+
+      const filtered = newSongs.filter(Boolean);
+      if (filtered.length > 0) {
+        setSongs((prev) => [...prev, ...filtered]);
+        alert(
+          `Playlist "${playlist.name}" added with ${filtered.length} playable songs (YouTube)!`
+        );
+      } else {
+        alert(`No playable tracks for "${playlist.name}"`);
       }
-    }
-  }, [currentSong]);
+    };
 
-  // Cleanup on unmount - save any currently playing song
-  useEffect(() => {
     return () => {
-      stopTrackingCurrentSong();
+      delete window.addMoodPlaylist;
     };
   }, []);
 
-  // Update audio time
+  // --- Audio Player Events
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const updateTime = () => setCurrentTime(audio.currentTime);
-    audio.addEventListener('timeupdate', updateTime);
-    
-    return () => audio.removeEventListener('timeupdate', updateTime);
-  }, []);
+    const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
+    const handleLoaded = () => setDuration(audio.duration || 0);
+    const handleEnded = () => {
+      if (repeatMode === "one") {
+        audio.currentTime = 0;
+        audio.play();
+      } else if (repeatMode === "all") {
+        playNext();
+      } else {
+        setIsPlaying(false);
+      }
+    };
+
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    audio.addEventListener("loadedmetadata", handleLoaded);
+    audio.addEventListener("ended", handleEnded);
+
+    return () => {
+      audio.removeEventListener("timeupdate", handleTimeUpdate);
+      audio.removeEventListener("loadedmetadata", handleLoaded);
+      audio.removeEventListener("ended", handleEnded);
+    };
+  }, [currentSong, repeatMode]);
+
+  // --- Sync play/pause
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isPlaying) {
+      audio.play().catch((err) => console.error("Playback failed:", err));
+    } else {
+      audio.pause();
+    }
+  }, [isPlaying, currentSong]);
+
+  // --- Volume control
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = volume;
+  }, [volume]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900">
+      {/* Header */}
       <header className="bg-black/30 backdrop-blur-sm border-b border-white/10 px-6 py-4">
         <div className="flex items-center justify-between">
           <Link
@@ -577,17 +652,23 @@ export default function Player() {
       </header>
 
       <div className="flex flex-1">
+        {/* Sidebar */}
         <PlaylistSidebar
           songs={songs}
           currentSong={currentSong}
           onSongSelect={selectSong}
         />
 
+        {/* Main Player */}
         <div className="flex-1 flex flex-col">
           {showVoiceControl && <VoiceControl />}
 
           <div className="flex-1 flex items-center justify-center p-8">
-            <NowPlaying currentSong={currentSong} />
+            {currentSong ? (
+              <NowPlaying currentSong={currentSong} />
+            ) : (
+              <p className="text-gray-300">No song selected</p>
+            )}
           </div>
 
           <PlayerControls
@@ -596,6 +677,7 @@ export default function Player() {
             setIsPlaying={setIsPlaying}
             currentTime={currentTime}
             setCurrentTime={setCurrentTime}
+            duration={duration}
             volume={volume}
             setVolume={setVolume}
             isShuffled={isShuffled}
@@ -607,11 +689,40 @@ export default function Player() {
           />
         </div>
       </div>
-
-      <audio
-        ref={audioRef}
-        src={currentSong.url || currentSong.preview_url || ""}
+      <input
+        type="file"
+        multiple
+        accept="audio/*"
+        onChange={handleFileUpload}
       />
+
+      {/* Audio element */}
+      {/* 🎵 If track from YouTube → use YouTube player */}
+      {/* Audio / YouTube element */}
+      {currentSong ? (
+        currentSong.source === "youtube" && currentSong.youtubeId ? (
+          <YouTube
+            videoId={currentSong.youtubeId}
+            opts={{
+              width: "0",
+              height: "0",
+              playerVars: { autoplay: isPlaying ? 1 : 0 },
+            }}
+            onEnd={playNext}
+          />
+        ) : currentSong.url || currentSong.preview_url ? (
+          <audio
+            ref={audioRef}
+            src={currentSong.url || currentSong.preview_url}
+            autoPlay={isPlaying}
+            onEnded={playNext}
+          />
+        ) : (
+          <p className="text-gray-300">No playable track available</p>
+        )
+      ) : (
+        <p className="text-gray-300">No song selected</p>
+      )}
     </div>
   );
 }
