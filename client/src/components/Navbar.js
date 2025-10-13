@@ -34,9 +34,9 @@ export default function Navbar({ user, onLogout, spotifyUser }) {
           <div className="hidden md:flex items-center space-x-6">
             <button
               className="text-white/80 hover:text-white transition-colors whitespace-nowrap cursor-pointer"
-              onClick={() => navigate("/discover")}
+              onClick={() => navigate("/about")}
             >
-              Discover
+              About
             </button>
             <button
               className="text-white/80 hover:text-white transition-colors whitespace-nowrap cursor-pointer"

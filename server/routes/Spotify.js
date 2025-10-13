@@ -401,10 +401,14 @@ router.get("/refresh_token", async (req, res) => {
 });
 
 // --- ROUTE: Get Spotify Profile ---
+// --- ROUTE: Get Spotify Profile ---
 router.get("/me", async (req, res) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.redirect("/api/spotify/login");
+    return res.status(401).json({
+      error: "No valid access token provided",
+      message: "Please authenticate with Spotify",
+    });
   }
 
   const token = authHeader.split(" ")[1];
@@ -415,7 +419,19 @@ router.get("/me", async (req, res) => {
     res.json(response.body);
   } catch (err) {
     console.error("Error fetching Spotify profile:", err.body || err);
-    return res.redirect("/api/spotify/login");
+
+    // Return JSON error instead of redirect
+    if (err.statusCode === 401) {
+      return res.status(401).json({
+        error: "Invalid or expired token",
+        message: "Please re-authenticate with Spotify",
+      });
+    }
+
+    return res.status(500).json({
+      error: "Failed to fetch Spotify profile",
+      details: err.message,
+    });
   }
 });
 
@@ -492,7 +508,7 @@ router.get("/recommend/:emotion", async (req, res) => {
       angry: "rock",
       relaxed: "chill",
       neutral: "pop",
-      excited: "dance",
+      surprise: "dance",
     };
 
     const keyword = moodKeywords[emotion] || "pop";

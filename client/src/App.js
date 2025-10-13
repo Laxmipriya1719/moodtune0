@@ -183,7 +183,7 @@ import {
   Navigate,
 } from "react-router-dom";
 
-import DiscoverPage from "./components/DiscoverPage";
+import About from "./components/About";
 import AuthCard from "./components/AuthCard";
 import Dashboard from "./components/Dashboard";
 import WelcomePage from "./components/WelcomePage";
@@ -192,8 +192,9 @@ import MoodDetection from "./pages/MoodDetection";
 import Analytics from "./pages/Analytics";
 import SpotifyCallback from "./components/SpotifyCallback";
 import LibraryPage from "./pages/LibraryPage";
-import ProfilePage from "./pages/Profile"; // Add this page
-
+import Profile from "./pages/Profile"; // Add this page
+import musicAnalytics from "./components/analytics/musicAppAnalytics";
+import { sessionTracker } from "./components/analytics/UserSessionTracker";
 import { auth } from "./firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -202,7 +203,20 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [spotifyTokens, setSpotifyTokens] = useState(null);
   const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    // Initialize analytics when user logs in
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        musicAnalytics.initializeUserAnalytics(user.uid);
+      }
+    });
 
+    // Track session end on unmount
+    return () => {
+      sessionTracker.endSession();
+      unsubscribe();
+    };
+  }, []);
   // Firebase auth listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -334,10 +348,10 @@ export default function App() {
           }
         />
         <Route
-          path="/discover"
+          path="/about"
           element={
             spotifyTokens ? (
-              <DiscoverPage spotifyTokens={spotifyTokens} />
+              <About spotifyTokens={spotifyTokens} />
             ) : (
               <Navigate to="/dashboard" />
             )
@@ -354,10 +368,10 @@ export default function App() {
           }
         />
         <Route
-          path="/ProfilePage"
+          path="/Profile"
           element={
             isAuthenticated || spotifyTokens ? (
-              <ProfilePage spotifyTokens={spotifyTokens} />
+              <Profile spotifyTokens={spotifyTokens} />
             ) : (
               <Navigate to="/login" />
             )

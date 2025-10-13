@@ -1,78 +1,3 @@
-// import React, { useEffect, useState } from "react";
-
-// export default function ProfilePage({ user, spotifyTokens }) {
-//   const [spotifyProfile, setSpotifyProfile] = useState(null);
-//   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState(null);
-
-//   useEffect(() => {
-//     const fetchSpotifyProfile = async () => {
-//       if (!spotifyTokens?.accessToken) return;
-//       setLoading(true);
-//       setError(null);
-//       try {
-//         const res = await fetch("http://127.0.0.1:5000/api/spotify/me", {
-//           headers: { Authorization: `Bearer ${spotifyTokens.accessToken}` },
-//         });
-//         if (!res.ok) throw new Error("Failed to fetch Spotify profile.");
-//         const data = await res.json();
-//         setSpotifyProfile(data);
-//       } catch (err) {
-//         console.error(err);
-//         setError(err.message);
-//       }
-//       setLoading(false);
-//     };
-
-//     fetchSpotifyProfile();
-//   }, [spotifyTokens]);
-
-//   const displayName = spotifyProfile?.display_name || user?.username || "Guest";
-//   const email = spotifyProfile?.email || user?.email || "N/A";
-//   const followers = spotifyProfile?.followers?.total ?? 0;
-//   const profilePic = spotifyProfile?.images?.[0]?.url || null;
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col items-center py-10 px-4">
-//       <h1 className="text-3xl font-bold mb-6 text-gray-800">Profile</h1>
-
-//       <div className="w-full max-w-md bg-white p-6 rounded-xl shadow-lg flex flex-col items-center">
-//         {profilePic ? (
-//           <img
-//             src={profilePic}
-//             alt="Profile"
-//             className="w-24 h-24 rounded-full object-cover mb-4"
-//           />
-//         ) : (
-//           <div className="w-24 h-24 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mb-4">
-//             <span className="text-white text-2xl font-bold">
-//               {displayName.charAt(0).toUpperCase()}
-//             </span>
-//           </div>
-//         )}
-
-//         <h2 className="text-xl font-semibold mb-2">{displayName}</h2>
-//         <p className="text-gray-600 mb-2">Email: {email}</p>
-
-//         {spotifyTokens ? (
-//           <>
-//             {loading && (
-//               <p className="text-gray-500">Loading Spotify info...</p>
-//             )}
-//             {error && <p className="text-red-500">{error}</p>}
-//             {spotifyProfile && (
-//               <p className="text-gray-700">
-//                 Followers: <span className="font-semibold">{followers}</span>
-//               </p>
-//             )}
-//           </>
-//         ) : (
-//           <p className="text-gray-500 mt-2">Spotify account not connected</p>
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
 // // src/pages/ProfileSettings.js
 // import React, { useState } from "react";
 // import { auth } from "../firebaseConfig";
@@ -200,7 +125,7 @@ import React, { useEffect, useState } from "react";
 import { auth } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
 
-export default function ProfileSettings({ spotifyTokens }) {
+export default function Profile({ spotifyTokens }) {
   const user = auth.currentUser;
   const navigate = useNavigate();
 
@@ -265,7 +190,7 @@ export default function ProfileSettings({ spotifyTokens }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-6">
       <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-lg p-8 max-w-md w-full text-white border border-white/20">
-        <h2 className="text-2xl font-bold mb-6">Profile Settings</h2>
+        <h2 className="text-2xl font-bold mb-6">Profile</h2>
 
         {/* Profile Picture & Name */}
         <div className="flex flex-col items-center mb-6">
