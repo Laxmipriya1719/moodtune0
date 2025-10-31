@@ -94,6 +94,7 @@
 
 
 import io
+import os
 import base64
 import numpy as np
 from PIL import Image
@@ -104,7 +105,8 @@ from keras.models import load_model
 from textblob import TextBlob
 
 app = Flask(__name__)
-CORS(app)
+allowed_origins = os.getenv("CORS_ALLOWED_ORIGINS", "https://moodtune-melodymind.onrender.com").split(",")
+CORS(app, origins=allowed_origins)
 
 # ---- Load model & helpers once on startup ----
 MODEL_PATH = "models/fer2013_mini_XCEPTION.102-0.66.hdf5"
