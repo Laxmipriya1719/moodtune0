@@ -105,8 +105,13 @@ from keras.models import load_model
 from textblob import TextBlob
 
 app = Flask(__name__)
-allowed_origins = os.getenv("CORS_ALLOWED_ORIGINS", "https://moodtune-melodymind.onrender.com").split(",")
-CORS(app, origins=allowed_origins)
+
+# ✅ Allow your frontend and server origins
+CORS(app, resources={r"/*": {"origins": [
+    "https://moodtune-melodymind.onrender.com",  # Frontend Render URL
+    "https://server-gxr7.onrender.com",           # Node backend
+    "*"
+]}})
 
 # ---- Load model & helpers once on startup ----
 MODEL_PATH = "models/fer2013_mini_XCEPTION.102-0.66.hdf5"
